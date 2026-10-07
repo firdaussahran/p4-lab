@@ -3,7 +3,8 @@
 #
 # Build and publish (course staff):
 #   docker build --platform linux/amd64 -t firdaussahran/netlab-p4:1.0 .devcontainer
-FROM p4lang/p4c:latest
+# Pinned to the exact image this lab was tested with; update deliberately, after testing.
+FROM p4lang/p4c:latest@sha256:f15bb88aed8eda8d354da4d02ab7ed1e246f96556d8260100bc98b6ddfe5a71e
 
 RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
