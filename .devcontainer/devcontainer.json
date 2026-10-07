@@ -1,0 +1,16 @@
+{
+  "name": "Week 5 P4 lab",
+  "image": "docker.io/firdaussahran/netlab-p4:1.0",
+  // Mininet and BMv2 create network namespaces and virtual links: that needs a privileged container.
+  "privileged": true,
+  "remoteUser": "root",
+  "hostRequirements": { "cpus": 2 },
+  "customizations": {
+    "vscode": {
+      "settings": { "files.associations": { "*.p4": "c" } }
+    },
+    "codespaces": {
+      "openFiles": ["README.md", "tunnel.p4"]
+    }
+  }
+}
