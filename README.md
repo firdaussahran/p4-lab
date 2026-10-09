@@ -14,7 +14,7 @@ Create codespace). The first start takes a few minutes while the lab image downl
 Then, in the terminal:
 
 ```bash
-python3 topo.py
+python3 topo.py --id NNNN
 ```
 
 That compiles `tunnel.p4`, starts the network, fills the switches' tables and opens the
@@ -34,7 +34,7 @@ That compiles `tunnel.p4`, starts the network, fills the switches' tables and op
 
 ## If something goes wrong
 
-- **Mininet complains that interfaces already exist** (after a crash): run `mn -c`, then `python3 topo.py` again.
+- **Mininet complains that interfaces already exist** (after a crash): run `mn -c`, then `python3 topo.py --id NNNN` again.
 - **Compilation failed**: the message gives the line number in `tunnel.p4`. Check for a missing `;` or `}`.
 - **The codespace stopped**: codespaces stop after 30 minutes idle. Restart it from github.com/codespaces; your edits are kept.
 - **When you've finished the lab**, delete the codespace at github.com/codespaces so it stops using your storage quota.

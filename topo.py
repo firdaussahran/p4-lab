@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
 r"""Week 5 lab: two P4 switches (BMv2) in Mininet, both running tunnel.p4.
 
-    h1 ---- s1 ---- s2 ---- h2   10.0.0.2   tunnel exit 2
-                      \---- h3   10.0.0.3   tunnel exit 3
-    h1: 10.0.0.1, tunnel exit 1
+    h1 ---- s1 ---- s2 ---- h2   10.NN.0.2   tunnel exit 2
+                      \---- h3   10.NN.0.3   tunnel exit 3
+    h1: 10.NN.0.1, tunnel exit 1
+
+NN is the last 2 digits of your student ID, without a leading zero.
 
 Compiles tunnel.p4, starts the network, fills the switches' tables from
-s1-commands.txt and s2-commands.txt, starts receive.py on h2 and h3 (output in
-logs/h2.txt and logs/h3.txt), then opens the Mininet CLI.
+s1-commands.txt and s2-commands.txt (with your NN filled in), starts receive.py
+on h2 and h3 (output in logs/h2.txt and logs/h3.txt), then opens the Mininet CLI.
 
-    python3 topo.py
+    python3 topo.py --id NNNN        (the last 4 digits of your student ID)
 """
+import argparse
 import json
 import os
 import socket
@@ -64,8 +67,11 @@ def compile_program():
         sys.exit(f"Compilation failed — fix {PROGRAM} and run topo.py again.")
 
 
-def load_tables(switch):
-    """Send <switch>-commands.txt to the switch, skipping tables the program doesn't use."""
+def load_tables(switch, nn):
+    """Send <switch>-commands.txt to the switch, skipping tables the program doesn't use.
+
+    Addresses in the files are written 10.NN.…; NN is replaced with yours.
+    """
     with open(BUILD) as f:
         tables = {t["name"] for p in json.load(f)["pipelines"] for t in p["tables"]}
     lines, skipped = [], set()
@@ -74,6 +80,7 @@ def load_tables(switch):
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
+            line = line.replace("10.NN.", f"10.{nn}.")
             table = line.split()[1]
             if table in tables:
                 lines.append(line)
@@ -91,13 +98,23 @@ def load_tables(switch):
         print(f"    {e}")
 
 
+def parse_id():
+    ap = argparse.ArgumentParser(description="Week 5: two P4 switches on your own addresses.")
+    ap.add_argument("--id", required=True, metavar="NNNN", help="the last 4 digits of your student ID")
+    nnnn = ap.parse_args().id
+    if len(nnnn) != 4 or not nnnn.isdigit():
+        ap.error("--id must be the last 4 digits of your student ID, e.g. --id 4207")
+    return int(nnnn[2:])
+
+
 def main():
+    nn = parse_id()
     setLogLevel("info")
     compile_program()
     net = Mininet(controller=None, autoSetMacs=True)
-    h1 = net.addHost("h1", ip="10.0.0.1/24")
-    h2 = net.addHost("h2", ip="10.0.0.2/24")
-    h3 = net.addHost("h3", ip="10.0.0.3/24")
+    h1 = net.addHost("h1", ip=f"10.{nn}.0.1/24")
+    h2 = net.addHost("h2", ip=f"10.{nn}.0.2/24")
+    h3 = net.addHost("h3", ip=f"10.{nn}.0.3/24")
     s1 = net.addSwitch("s1", cls=BMv2Switch)
     s2 = net.addSwitch("s2", cls=BMv2Switch)
     net.addLink(h1, s1)  # s1 port 1
@@ -111,9 +128,10 @@ def main():
     net.start()
     net.staticArp()  # the P4 program doesn't handle ARP, so hosts know each other's MACs
     for s in ("s1", "s2"):
-        load_tables(s)
+        load_tables(s, nn)
     for h in (h2, h3):  # print what arrives at h2 and h3 into logs/h2.txt and logs/h3.txt
         h.cmd(f"python3 receive.py > logs/{h.name}.txt 2>&1 &")
+    info(f"*** Your hosts: h1 10.{nn}.0.1, h2 10.{nn}.0.2, h3 10.{nn}.0.3\n")
     info("*** Ready. Switch logs: logs/s1.txt, logs/s2.txt. What h2 and h3 receive: logs/h2.txt, logs/h3.txt\n")
     CLI(net)
     net.stop()
