@@ -1,8 +1,7 @@
 # Week 5 P4 lab environment: the official P4 compiler and BMv2 software switch, plus Mininet.
 # x86 only, like the upstream image — GitHub Codespaces runs on x86.
 #
-# Build and publish (course staff):
-#   docker build --platform linux/amd64 -t firdaussahran/netlab-p4:1.0 .devcontainer
+# Built and published automatically by .github/workflows/image.yml (as ghcr.io/<owner>/p4-lab).
 # Pinned to the exact image this lab was tested with; update deliberately, after testing.
 FROM p4lang/p4c:latest@sha256:f15bb88aed8eda8d354da4d02ab7ed1e246f96556d8260100bc98b6ddfe5a71e
 

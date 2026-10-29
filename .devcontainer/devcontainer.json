@@ -1,6 +1,7 @@
 {
   "name": "Week 5 P4 lab",
-  "image": "docker.io/firdaussahran/netlab-p4:1.0",
+  // Built and published by .github/workflows/image.yml.
+  "image": "ghcr.io/firdaussahran/p4-lab:1.0",
   // Mininet and BMv2 create network namespaces and virtual links: that needs a privileged container.
   "privileged": true,
   "remoteUser": "root",

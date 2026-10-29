@@ -9,9 +9,13 @@ disagree.
 
 ## Start
 
-This repository is meant to be opened in **GitHub Codespaces** (Code → Codespaces →
-Create codespace). The first start takes a few minutes while the lab image downloads.
-Then, in the terminal:
+Make your own copy first, so you can save your work:
+
+1. At the top of this repository's page, click **Use this template → Create a new repository**.
+   Create it under your own account (public or private).
+2. In **your** new repository: **Code → Codespaces → Create codespace on main**.
+
+The first start takes a minute or two while the lab image downloads. Then, in the terminal:
 
 ```bash
 python3 topo.py --id NNNN
@@ -37,4 +41,6 @@ That compiles `tunnel.p4`, starts the network, fills the switches' tables and op
 - **Mininet complains that interfaces already exist** (after a crash): run `mn -c`, then `python3 topo.py --id NNNN` again.
 - **Compilation failed**: the message gives the line number in `tunnel.p4`. Check for a missing `;` or `}`.
 - **The codespace stopped**: codespaces stop after 30 minutes idle. Restart it from github.com/codespaces; your edits are kept.
+- **Save your work**: commit and push from the codespace (Source Control panel, or `git` in the
+  terminal) — it goes to your own repository.
 - **When you've finished the lab**, delete the codespace at github.com/codespaces so it stops using your storage quota.
