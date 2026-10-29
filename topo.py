@@ -12,6 +12,10 @@ s1-commands.txt and s2-commands.txt (with your NN filled in), starts receive.py
 on h2 and h3 (output in logs/h2.txt and logs/h3.txt), then opens the Mininet CLI.
 
     python3 topo.py --id NNNN        (the last 4 digits of your student ID)
+
+For the assignment's mixed-rollout experiment, s2 can run a different program:
+
+    python3 topo.py --id NNNN --s2-program old.p4
 """
 import argparse
 import json
@@ -29,6 +33,8 @@ from mininet.node import Switch
 PROGRAM = "tunnel.p4"
 BUILD = "build/tunnel.json"
 THRIFT_PORT = {"s1": 9090, "s2": 9091}
+# The compiled program each switch runs. Normally both run tunnel.p4; --s2-program changes s2's.
+SWITCH_BUILD = {"s1": BUILD, "s2": BUILD}
 
 
 class BMv2Switch(Switch):
@@ -42,7 +48,7 @@ class BMv2Switch(Switch):
         thrift = THRIFT_PORT[self.name]
         self.cmd(
             f"simple_switch --device-id {thrift - 9090} --thrift-port {thrift} "
-            f"--log-file logs/{self.name} --log-flush {ports} {BUILD} > logs/{self.name}.out 2>&1 &"
+            f"--log-file logs/{self.name} --log-flush {ports} {SWITCH_BUILD[self.name]} > logs/{self.name}.out 2>&1 &"
         )
         for _ in range(100):  # wait until the switch accepts table commands
             with socket.socket() as s:
@@ -56,15 +62,15 @@ class BMv2Switch(Switch):
         super().stop(deleteIntfs)
 
 
-def compile_program():
+def compile_program(program=PROGRAM, build=BUILD):
     os.makedirs("build", exist_ok=True)
     os.makedirs("logs", exist_ok=True)
-    info(f"*** Compiling {PROGRAM}\n")
-    result = subprocess.run(["p4c-bm2-ss", "-o", BUILD, PROGRAM], capture_output=True, text=True)
+    info(f"*** Compiling {program}\n")
+    result = subprocess.run(["p4c-bm2-ss", "-o", build, program], capture_output=True, text=True)
     if result.stderr.strip():
         print(result.stderr.strip())
     if result.returncode != 0:
-        sys.exit(f"Compilation failed — fix {PROGRAM} and run topo.py again.")
+        sys.exit(f"Compilation failed — fix {program} and run topo.py again.")
 
 
 def load_tables(switch, nn):
@@ -72,7 +78,7 @@ def load_tables(switch, nn):
 
     Addresses in the files are written 10.NN.…; NN is replaced with yours.
     """
-    with open(BUILD) as f:
+    with open(SWITCH_BUILD[switch]) as f:
         tables = {t["name"] for p in json.load(f)["pipelines"] for t in p["tables"]}
     lines, skipped = [], set()
     with open(f"{switch}-commands.txt") as f:
@@ -98,19 +104,23 @@ def load_tables(switch, nn):
         print(f"    {e}")
 
 
-def parse_id():
+def parse_args():
     ap = argparse.ArgumentParser(description="Week 5: two P4 switches on your own addresses.")
     ap.add_argument("--id", required=True, metavar="NNNN", help="the last 4 digits of your student ID")
-    nnnn = ap.parse_args().id
-    if len(nnnn) != 4 or not nnnn.isdigit():
+    ap.add_argument("--s2-program", metavar="FILE", help="run this P4 program on s2 instead of tunnel.p4")
+    args = ap.parse_args()
+    if len(args.id) != 4 or not args.id.isdigit():
         ap.error("--id must be the last 4 digits of your student ID, e.g. --id 4207")
-    return int(nnnn[2:])
+    return int(args.id[2:]), args.s2_program
 
 
 def main():
-    nn = parse_id()
+    nn, s2_program = parse_args()
     setLogLevel("info")
     compile_program()
+    if s2_program:
+        SWITCH_BUILD["s2"] = "build/s2.json"
+        compile_program(s2_program, SWITCH_BUILD["s2"])
     net = Mininet(controller=None, autoSetMacs=True)
     h1 = net.addHost("h1", ip=f"10.{nn}.0.1/24")
     h2 = net.addHost("h2", ip=f"10.{nn}.0.2/24")
@@ -132,6 +142,8 @@ def main():
     for h in (h2, h3):  # print what arrives at h2 and h3 into logs/h2.txt and logs/h3.txt
         h.cmd(f"python3 receive.py > logs/{h.name}.txt 2>&1 &")
     info(f"*** Your hosts: h1 10.{nn}.0.1, h2 10.{nn}.0.2, h3 10.{nn}.0.3\n")
+    if s2_program:
+        info(f"*** Mixed rollout: s1 runs {PROGRAM}, s2 runs {s2_program}\n")
     info("*** Ready. Switch logs: logs/s1.txt, logs/s2.txt. What h2 and h3 receive: logs/h2.txt, logs/h3.txt\n")
     CLI(net)
     net.stop()

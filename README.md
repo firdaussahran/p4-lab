@@ -24,6 +24,17 @@ python3 topo.py --id NNNN
 That compiles `tunnel.p4`, starts the network, fills the switches' tables and opens the
 `mininet>` prompt. Type `exit` to stop it; run it again after every change to `tunnel.p4`.
 
+## Assignment
+
+After the lab, the Week 5 assignment continues it: **put a hop limit on the tunnel**. The
+instructions are at the end of the Week 5 Lab tab on the course website. Work on a branch,
+write `assignment/REPORT.md`, save your evidence in `assignment/evidence/`, and submit your
+pull request's link on Spectrum. Every push is checked automatically: the **Compile tunnel.p4**
+check must be green.
+
+`python3 topo.py --id NNNN --s2-program tunnel_v1.p4` runs s2 with a different program, for the
+assignment's mixed-rollout experiment.
+
 ## Files
 
 | File | What it is |
@@ -33,6 +44,7 @@ That compiles `tunnel.p4`, starts the network, fills the switches' tables and op
 | `s1-commands.txt`, `s2-commands.txt` | Table entries loaded into each switch at start. |
 | `send.py` | Sends one test packet, optionally tunnelled (run it on h1). |
 | `receive.py` | Started automatically on h2 and h3; output in `logs/h2.txt`, `logs/h3.txt`. |
+| `assignment/REPORT.md` | The assignment's report template. |
 | `p4cli` | Sends one command to a switch's runtime CLI, e.g. `./p4cli s2 table_dump MyIngress.ipv4_lpm`. |
 | `logs/s1.txt`, `logs/s2.txt` | What each switch did with every packet: parser states, tables, actions. |
 
