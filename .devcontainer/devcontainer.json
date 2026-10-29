@@ -8,7 +8,12 @@
   "hostRequirements": { "cpus": 2 },
   "customizations": {
     "vscode": {
-      "settings": { "files.associations": { "*.p4": "c" } }
+      "settings": {
+        "files.associations": { "*.p4": "c" },
+        // *.p4 is coloured as C, but it isn't C: stop the C/C++ extension checking it, or it reports
+        // P4's own headers (core.p4, v1model.p4) as missing. p4c, run by topo.py, is the real check.
+        "C_Cpp.intelliSenseEngine": "disabled"
+      }
     },
     "codespaces": {
       "openFiles": ["README.md", "tunnel.p4"]
